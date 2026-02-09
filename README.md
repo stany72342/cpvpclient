@@ -10,38 +10,33 @@ Provide a timing and packet-control layer that improves the consistency of manua
 - **Position prediction**: Short-horizon prediction (1–2 ticks) helps pre-rotate and validate interactions against expected entity positions.
 - **Packet ordering**: Outgoing packets are ordered to match server expectations for consistent placement and detonation.
 
-## Modules
+## Implemented Modules
 ### TickTracker
-Tracks the server tick cadence using movement confirmations and latency samples. Exposes timing primitives like:
-- `nextTickInMs()`
-- `timeSinceLastTickMs()`
+Tracks the server tick cadence using movement confirmations and latency samples.
 
 ### PacketScheduler
-Queues outgoing packets and decides whether to send immediately or delay for same-tick processing. Supports:
-- exact millisecond scheduling
-- packet priority (e.g., rotation before use)
-- ordering constraints
+Queues outgoing packets and decides whether to send immediately or delay for same-tick processing.
 
 ### CrystalOptimizer
-Intercepts crystal placement and attack actions.
-
-Responsibilities:
-- Pre-rotation adjustment before placement
-- Schedules placement packets just before tick boundary
-- Queues attack packets on the spawn tick for instant pop
+Schedules server-rotation, crystal placement, and break packets across the closest tick boundary.
 
 ### AnchorOptimizer
-Handles respawn anchor charge and detonation timing.
-
-Responsibilities:
-- Charge packet at end of tick
-- Detonation at start of next tick
-- Server-side face validation via rotation ordering
+Schedules charge and detonate packets across a tick boundary with explicit rotation ordering.
 
 ## Non-Goals
 - No automated aiming or target selection
 - No automated clicks or action macros
 - No server-side exploits
+
+## Install
+```bash
+python -m pip install -e .
+```
+
+## Run Tests
+```bash
+python -m pytest -q
+```
 
 ## High-Level Flow
 ```
@@ -51,11 +46,5 @@ Input
       -> Server
 ```
 
-## Example Timing
-- Click at 23 ms into tick
-- Scheduler waits 25 ms
-- Packet lands at 48–49 ms
-- Server processes on current tick
-
-## Status
-This repository currently contains the architectural spec and high-level design. Implementation details will be added in future revisions.
+## Notes
+This repository currently provides a standalone optimizer core (timing, scheduling, and packet plans). Integrating it into a full Minecraft protocol pipeline is the next step.
